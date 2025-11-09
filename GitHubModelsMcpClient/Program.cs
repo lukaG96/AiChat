@@ -23,7 +23,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp", policy =>
     {
         policy
-            .WithOrigins("http://localhost:3000") 
+            .WithOrigins(
+                "http://localhost:3000",
+                "http://localhost",
+                "http://nginx",
+                "http://ai-chat-react"
+            ) 
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -53,7 +58,7 @@ builder.Services.AddSignalR();
 builder.Services.AddChatClient(_ => 
         new OpenAI.Chat.ChatClient(
             "gpt-4o-mini", 
-            "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"
+            "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"
             ).AsIChatClient()) 
             .UseFunctionInvocation(configure: x => 
                 { 
@@ -67,7 +72,7 @@ builder.Services.AddSingleton(async sp =>
 {
     var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("McpSetup");
 
-    string? mcpDockerCmd = config["McpServerDockerCommand"] ?? "docker run -i --rm melmasry/studentsmcp";
+    string? mcpDockerCmd = config["McpServerDockerCommand"] ?? "docker run -i --rm --name studentsmcp-server 066543543/studentsmcp:latest";
     var dockerCmdParts = mcpDockerCmd.Split(' ', StringSplitOptions.RemoveEmptyEntries);
     var dockerCommand = dockerCmdParts.First();
     var dockerArguments = dockerCmdParts.Skip(1).ToArray();

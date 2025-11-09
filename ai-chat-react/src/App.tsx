@@ -8,8 +8,9 @@ function App() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    const apiUrl = process.env.REACT_APP_API_URL || "/chatHub";
     const connect = new signalR.HubConnectionBuilder()
-      .withUrl("http://localhost:5000/chatHub") // URL tvoje .NET aplikacije
+      .withUrl(apiUrl)
       .withAutomaticReconnect()
       .build();
 
