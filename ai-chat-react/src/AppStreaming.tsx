@@ -8,28 +8,30 @@ interface ChatMessage {
   streaming?: boolean;
 }
 
-function App() {
+function AppStreaming() {
   const [connection, setConnection] = useState<signalR.HubConnection | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [message, setMessage] = useState("");
 
-  // Ref for auto-scrolling
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Use Nginx URL for frontend to backend
+    const apiUrl = process.env.REACT_APP_API_URL || "/chatHubStreaming";
+
     const connect = new signalR.HubConnectionBuilder()
-      .withUrl("http://localhost:5000/chatHubStreaming")
+      .withUrl(apiUrl)  // <- proxy through nginx
       .withAutomaticReconnect()
       .build();
 
-    // Normal messages (user/system)
+    // Normal messages
     connect.on("ReceiveMessage", (user, text) => {
-      setMessages((prev) => [...prev, { user, text }]);
+      setMessages(prev => [...prev, { user, text }]);
     });
 
-    // Streaming chunks from AI
+    // Streaming AI chunks
     connect.on("ReceiveStreamChunk", (user, chunk) => {
-      setMessages((prev) => {
+      setMessages(prev => {
         const updated = [...prev];
         const last = updated[updated.length - 1];
 
@@ -44,9 +46,9 @@ function App() {
 
     // Streaming complete
     connect.on("ReceiveStreamComplete", (user, fullText) => {
-      setMessages((prev) => {
+      setMessages(prev => {
         const updated = [...prev];
-        const idx = updated.findIndex((m) => m.user === user && m.streaming);
+        const idx = updated.findIndex(m => m.user === user && m.streaming);
         if (idx !== -1) updated[idx] = { user, text: fullText, streaming: false };
         return updated;
       });
@@ -54,26 +56,31 @@ function App() {
 
     connect.start()
       .then(() => console.log("✅ Connected to SignalR hub"))
-      .catch(console.error);
+      .catch(err => console.error("SignalR connection error:", err));
 
     setConnection(connect);
 
-    // Clean up on unmount
     return () => {
       connect.stop();
     };
   }, []);
 
   useEffect(() => {
-    // Auto-scroll to bottom on new message
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const sendMessage = async () => {
     if (connection && message.trim()) {
-      // Send message to backend
-      await connection.invoke("SendMessage", "User", message);
-      setMessage("");
+      try {
+        // Send to backend
+        await connection.invoke("SendMessage", "You", message);
+
+        // Add to local messages
+        setMessages(prev => [...prev, { user: "You", text: message }]);
+        setMessage("");
+      } catch (err) {
+        console.error("Send message error:", err);
+      }
     }
   };
 
@@ -82,10 +89,7 @@ function App() {
       <h2>AI Chat (Streaming)</h2>
       <div className="messages">
         {messages.map((m, i) => (
-          <div
-            key={i}
-            className={m.user === "You" ? "user-msg" : "bot-msg"}
-          >
+          <div key={i} className={m.user === "You" ? "user-msg" : "bot-msg"}>
             <strong>{m.user}:</strong> {m.text}
             {m.streaming && <span className="cursor">▌</span>}
           </div>
@@ -95,9 +99,9 @@ function App() {
       <div className="input-area">
         <input
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={e => setMessage(e.target.value)}
           placeholder="Type your message..."
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          onKeyDown={e => e.key === "Enter" && sendMessage()}
         />
         <button onClick={sendMessage}>Send</button>
       </div>
@@ -105,4 +109,4 @@ function App() {
   );
 }
 
-export default App;
+export default AppStreaming;

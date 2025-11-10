@@ -35,7 +35,7 @@ function App() {
 
   return (
     <div className="chat-container">
-      <h2>AI Chat</h2>
+      <h2>AI Chat async</h2>
       <div className="messages">
         {messages.map((m, i) => (
           <div key={i} className={m.user === "You" ? "user-msg" : "bot-msg"}>

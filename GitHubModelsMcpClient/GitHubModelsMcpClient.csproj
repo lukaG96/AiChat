@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <!-- Dependency Injection -->
+    <!-- <PackageReference Include="Microsoft.Extensions.AI.Ollama" Version="9.7.0-preview.1.25356.2" /> -->
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.10" />
 
@@ -30,6 +31,8 @@
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="9.10.2" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.10.2-preview.1.25552.1" />
     <PackageReference Include="ModelContextProtocol" Version="0.3.0-preview.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="OllamaSharp" Version="5.4.8" />
 
     <!-- OpenAI Client for GitHub Models -->
     <PackageReference Include="OpenAI" Version="2.6.0" />
